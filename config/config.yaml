@@ -1,0 +1,4 @@
+threshold: 0.85
+delay: 0.5
+image_folder: assets
+debug_image: true
