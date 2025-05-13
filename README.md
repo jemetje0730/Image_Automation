@@ -34,7 +34,7 @@ image_automation/
 │   ├── __init__.py
 │   └── scenario_runner.py      # csv, json, yaml 기반 자동화 시나리오 실행
 │
-├── scenarios/                  # 자동화 시나리오 정의 (CSV, JSON, YAML 등)
+├── scenarios/                  # 자동화 시나리오 정의
 │   └── scenario_1.csv
 │
 ├── utils/                      # 보조 유틸리티 함수들
