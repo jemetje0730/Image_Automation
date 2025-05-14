@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 from action.mouse import click_button
-from action.general import wait  # ✅ 추가됨
+from action.common import wait  # ✅ 추가됨
 
 def run_scenario(scenario_path, config):
     if not os.path.exists(scenario_path):
