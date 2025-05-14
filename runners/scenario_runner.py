@@ -14,7 +14,9 @@ def run_scenario(scenario_path, config):
         for step in reader:
             action = step.get("action", "").strip()
             target = step.get("target", "").strip()
-            duration = float(step.get("duration", config.get("delay", 0.5)))
+            # csv에 duration이 없을 경우 config에서 기본 값 0.5초를 사용
+            duration_str = step.get("duration", "").strip()
+            duration = float(duration_str) if duration_str else config.get("delay", 0.5)
 
             if action == "click":
                 image_path = os.path.join(config["image_folder"], target)
