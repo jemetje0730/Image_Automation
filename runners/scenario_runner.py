@@ -1,12 +1,12 @@
 import csv
 import logging
-import time
 import os
 from action.mouse import click_button
+from action.general import wait  # ✅ 추가됨
 
 def run_scenario(scenario_path, config):
     if not os.path.exists(scenario_path):
-        logging.error(f"시나리오 파일을 찾을 수 없습니다: {scenario_path}")
+        logging.error(f"시나리오 파일이 존재하지 않습니다: {scenario_path}")
         return
 
     with open(scenario_path, "r", encoding="utf-8") as f:
@@ -22,8 +22,7 @@ def run_scenario(scenario_path, config):
                 click_button(image_path, threshold=config.get("threshold", 0.85), delay=duration)
 
             elif action == "wait":
-                logging.info(f"[시나리오] 대기: {duration:.1f}초")
-                time.sleep(duration)
+                wait(duration)  # ✅ 변경된 부분
 
             else:
                 logging.warning(f"[시나리오] 알 수 없는 액션: {action}")

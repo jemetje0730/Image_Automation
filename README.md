@@ -23,6 +23,7 @@
 image_automation/
 ├── action/                     # 마우스/키보드 등의 입력 동작 처리
 │   ├── __init__.py
+│   ├── common.py               # 마우스/키보드 이외 동작
 │   ├── mouse.py                # 클릭, 드래그 등 마우스 동작
 │   └── keyboard.py             # 타이핑, 키 입력 등 키보드 동작
 │
