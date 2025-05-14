@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+
+# VS Code settings
+.vscode/
+.settings/
+
+# macOS, Linux, Windows system files
+.DS_Store
+Thumbs.db
+
+# Logs and debug files
+logs/
+*.log
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# Test results
+htmlcov/
+.coverage
+coverage.xml
+.cache
+nosetests.xml
+pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# mypy, pylint, etc.
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Environments and tooling
+pip-log.txt
+pip-delete-this-directory.txt
+
+# dotenv
+*.env
+*.env.*
+
+# Editable setup
+*.egg-info/
+*.egg
+
+# IDE-specific
+.idea/
+*.iml
+
+# Project-specific (customize this)
+logs/debug/
+match_debug_*.png
+
+**/__pycache__/
