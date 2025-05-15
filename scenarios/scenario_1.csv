@@ -1,8 +1,0 @@
-action,target,duration
-click,error.png,0.5
-wait,,0.5
-click,error.png,0.5
-wait,,0.5
-click,exit.png,0.5
-wait,,0.5
-click,error.png,0.5

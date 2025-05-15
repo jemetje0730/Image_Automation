@@ -1,0 +1,10 @@
+[
+  {"key": "A", "action": "click", "target": "note.png", "duration": 0.5, "threshold": 0.9},
+  {"key": "A", "action": "hotkey", "target": "ctrl+t", "duration": 0.5},
+  {"key": "A", "action": "type", "target": "Testing a big step", "duration": 0.5},
+  {"key": "A", "action": "press", "target": "enter", "duration": 0.5},
+  {"key": "A", "action": "type", "target": "Testing Another huge step", "duration": 0.5},
+  {"key": "A", "action": "hotkey", "target": "ctrl+w", "duration": 0.5},
+  {"key": "A", "action": "click", "target": "nosave.png", "duration": 0.5},
+  {"key": "A", "action": "click", "target": "note.png", "duration": 0.5}
+]
