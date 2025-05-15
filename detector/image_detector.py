@@ -7,6 +7,7 @@ import os
 
 prev_success_scale = 1.0  # 원본 이미지 스케일
 
+# 이름 바꾸기 def 하나 더 추가되니까
 def find_image_on_screen(image_path, threshold=0.85):
     global prev_success_scale
 
@@ -43,3 +44,5 @@ def find_image_on_screen(image_path, threshold=0.85):
 
     logging.warning(f"'{image_path}' 탐지 실패 | 최고 점수: {best_match:.3f}")
     return None
+
+# def 이미지 비교 더 추가하기
