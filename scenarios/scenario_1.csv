@@ -1,6 +1,0 @@
-action,target,duration
-click,trash.png,0.5
-wait,,0.5
-click,file.png,0.5
-wait,,0.5
-click,exit.png,0.5

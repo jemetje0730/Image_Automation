@@ -29,26 +29,34 @@ image_automation/
 │
 ├── detector/                   # 화면에서 이미지 찾기 등 탐지 로직
 │   ├── __init__.py
-│   └── image_detector.py       # findImageOnScreen, 매칭 로직
+│   └── image_detector.py       # 이미지 매칭 로직
 │
 ├── runners/                    # 시나리오 실행기 (입력 → 동작 매핑)
 │   ├── __init__.py
 │   └── scenario_runner.py      # csv, json, yaml 기반 자동화 시나리오 실행
 │
 ├── scenarios/                  # 자동화 시나리오 정의
-│   └── scenario_1.csv
+│   └── scenario.json           # 사용자가 설정한 시나리오
 │
 ├── utils/                      # 보조 유틸리티 함수들
 │   ├── __init__.py
-│   └── log.py                  # 로그 메시지 출력 방식 통일, INFO, DEBUG, ERROR 등등
+│   ├── config_loader.py        # YAML 파일 파이썬 객체로 변환
+│   ├── log_clean.py            # 로그 압축 및 정리
+│   ├── runner_log.py           # 사니리오 로그 출력
+│   └── app_log.py              # 모든 로그 메시지 출력 
 │
 ├── config/                     # 설정 정보 분리
-│   └── config.yaml             # 이미지 폴더 경로, threshold, 딜레이 등
+│   └── config.yaml             # 동작 기본 설정값 저장
 │
 ├── assets/                     # 사용하는 이미지 리소스 저장소
-│   ├── trash.png
-│   ├── file.png
-│   └── etc.png
+│   ├── result.py               # 매칭 성공 시 나오는 화면 결과
+│   └── image.png               # 매칭 하려는 이미지
+│
+├── logs/                       # 로그 저장소                    
+│   ├── app/                    # 모든 로그 저장
+│   │   └── app.log
+│   └── scenes/                 # 시나리오 로그 저장
+│       └── scenario.log      
 │
 ├── tests/                      # pytest 사용 예정
 │   ├── __init__.py  
