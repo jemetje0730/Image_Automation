@@ -4,7 +4,7 @@ import json
 import pyautogui
 import cv2
 import numpy as np
-from action.mouse import click_button, double_click_button
+from action.mouse import click_button
 from action.common import wait
 from action.keyboard import type_text, press_key, hotkey
 from utils.runner_log import get_runner_logger
@@ -23,24 +23,26 @@ def run_scenario(scenario_path, config):
     except Exception as e:
         runner_logger.error(f"시나리오 파일(JSON) 파싱 실패: {e}")
         return False
-    
+
     for step in steps:
         if "key" not in step:
             runner_logger.error(f"시나리오 단계에 'key'가 없습니다: {step} - 시나리오 중단")
-            return False # 키 없으면 중단
-        
+            return False
+
         key = step.get("key", "A").strip()
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
-        duration = step.get("duration", config.get("delay", 0.5))
-        threshold = step.get("threshold", "") # threshold 값 읽기 (없으면 빈 문자열)
+        method = step.get("method", "template").strip()
 
+        # duration 처리
+        duration = step.get("duration", config.get("delay", 0.5))
         try:
             duration = float(duration)
         except ValueError:
             duration = config.get("delay", 0.5)
-        
-        # threshold 값 처리: 빈 문자열이면 config 기본값, 아니면 float 변환
+
+        # threshold 처리
+        threshold = step.get("threshold", "")
         if threshold == "" or threshold is None:
             threshold = config.get("threshold")
         else:
@@ -48,6 +50,16 @@ def run_scenario(scenario_path, config):
                 threshold = float(threshold)
             except ValueError:
                 threshold = config.get("threshold")
+
+        # min_match_count 처리
+        min_match_count = step.get("min_match_count", "")
+        if min_match_count == "" or min_match_count is None:
+            min_match_count = config.get("min_match_count", 10)
+        else:
+            try:
+                min_match_count = int(min_match_count)
+            except ValueError:
+                min_match_count = config.get("min_match_count", 10)
 
         # 결과 비교 먼저 처리
         if key == "R":
@@ -66,7 +78,6 @@ def run_scenario(scenario_path, config):
                 result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, _ = cv2.minMaxLoc(result)
 
-                threshold = config.get("threshold")
                 runner_logger.info(f"[매칭 결과] 매칭 점수: {max_val:.3f} (기준: {threshold})")
 
                 if max_val >= threshold:
@@ -79,17 +90,31 @@ def run_scenario(scenario_path, config):
                 runner_logger.warning(f"[결과 단계 무시] 알 수 없는 R action: {action}")
                 continue  # 알 수 없는 R 액션 무시
 
-        # 일반 액션 처리 (key == "A")
+        # 일반 액션 (key == "A") 처리
+        image_path = os.path.join(config["image_folder"], target)
+
         if action == "click":
-            image_path = os.path.join(config["image_folder"], target)
-            runner_logger.info(f"[시나리오] 클릭: {target}| threshold = {threshold}")
-            click_button(image_path, threshold=config.get("threshold", 0.85), delay=duration)
+            runner_logger.info(f"[시나리오] 클릭: {target} | method = {method} | min_match_count = {min_match_count}")
+            success = click_button(image_path, method=method, threshold=threshold, delay=duration, min_match_count=min_match_count)
+            if not success:
+                runner_logger.error(f"❌ 클릭 실패: {target} - 시나리오 중단")
+                return False
             wait(duration)
 
         elif action == "double_click":
-            image_path = os.path.join(config["image_folder"], target)
-            runner_logger.info(f"[시나리오] 더블 클릭: {target}")
-            double_click_button(image_path, threshold=config.get("threshold", 0.85), delay=duration)
+            runner_logger.info(f"[시나리오] 더블 클릭: {target} | method = {method} | min_match_count = {min_match_count}")
+            success = click_button(image_path, method=method, threshold=threshold, delay=duration, double_click=True, min_match_count=min_match_count)
+            if not success:
+                runner_logger.error(f"❌ 더블 클릭 실패: {target} - 시나리오 중단")
+                return False
+            wait(duration)
+
+        elif action == "right_click":
+            runner_logger.info(f"[시나리오] 우클릭: {target} | method = {method} | min_match_count = {min_match_count}")
+            success = click_button(image_path, method=method, threshold=threshold, delay=duration, button="right", min_match_count=min_match_count)
+            if not success:
+                runner_logger.error(f"❌ 우클릭 실패: {target} - 시나리오 중단")
+                return False
             wait(duration)
 
         elif action == "hotkey":
@@ -110,4 +135,5 @@ def run_scenario(scenario_path, config):
 
         else:
             runner_logger.warning(f"[시나리오] 알 수 없는 액션: {action}")
+
     return True
