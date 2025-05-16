@@ -1,3 +1,4 @@
-threshold: 0.85
+threshold: 0.85       # 템플릿 매칭용 유사도 기준
+min_match_count: 10   # SIFT 매칭용 최소 매칭 개수
 delay: 0.5
 image_folder: assets

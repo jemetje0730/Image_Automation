@@ -7,7 +7,7 @@ import os
 
 prev_success_scale = 1.0  # 원본 이미지 스케일
 
-def find_image_on_screen(image_path, threshold=0.85):
+def find_image_by_template(image_path, threshold=0.85):
     global prev_success_scale
 
     if not os.path.exists(image_path):
@@ -43,3 +43,41 @@ def find_image_on_screen(image_path, threshold=0.85):
 
     logging.warning(f"'{image_path}' 탐지 실패 | 최고 점수: {best_match:.3f}")
     return None
+
+def find_image_by_sift(image_path, min_match_count=10):
+    if not os.path.exists(image_path):
+        logging.error(f"[SIFT] 이미지 파일 없음: {image_path}")
+        return None
+
+    template = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    screenshot = pyautogui.screenshot()
+    screen_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
+
+    sift = cv2.SIFT_create()
+
+    kp1, des1 = sift.detectAndCompute(template, None)
+    kp2, des2 = sift.detectAndCompute(screen_gray, None)
+
+    if des1 is None or des2 is None:
+        logging.warning(f"[SIFT] 키포인트 부족")
+        return None
+
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1, des2, k=2)
+
+    good_matches = []
+    for m,n in matches:
+        if m.distance < 0.75 * n.distance:
+            good_matches.append(m)
+
+    if len(good_matches) < min_match_count:
+        logging.info(f"[SIFT] 매칭 실패 - 매치 수: {len(good_matches)} (기준: {min_match_count})")
+        return None
+
+    match_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
+    avg_x = int(np.mean(match_pts[:, 0]))
+    avg_y = int(np.mean(match_pts[:, 1]))
+
+    logging.info(f"[SIFT] '{image_path}' 매칭 성공 | 매치 수: {len(good_matches)}")
+    return (avg_x, avg_y)
+

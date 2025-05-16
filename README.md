@@ -52,11 +52,7 @@ image_automation/
 │   ├── result.py               # 매칭 성공 시 나오는 화면 결과
 │   └── image.png               # 매칭 하려는 이미지
 │
-├── logs/                       # 로그 저장소                    
-│   ├── app/                    # 모든 로그 저장
-│   │   └── app.log
-│   └── scenes/                 # 시나리오 로그 저장
-│       └── scenario.log      
+├── logs/                       # 로그 저장소 app이랑 scenes랑 분리되어 저장된다
 │
 ├── tests/                      # pytest 사용 예정
 │   ├── __init__.py  
