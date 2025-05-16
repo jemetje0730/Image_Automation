@@ -67,3 +67,5 @@ logs/debug/
 match_debug_*.png
 
 **/__pycache__/
+assets
+scenarios
