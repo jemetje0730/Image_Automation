@@ -49,7 +49,7 @@ image_automation/
 │   └── config.yaml             # 동작 기본 설정값 저장
 │
 ├── assets/                     # 사용하는 이미지 리소스 저장소
-│   ├── result.py               # 매칭 성공 시 나오는 화면 결과
+│   ├── result.png               # 매칭 성공 시 나오는 화면 결과
 │   └── image.png               # 매칭 하려는 이미지
 │
 ├── logs/                       # 로그 저장소 app이랑 scenes랑 분리되어 저장된다

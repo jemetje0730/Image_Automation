@@ -1,3 +1,4 @@
+import keyboard
 import pyautogui
 import logging
 
@@ -12,7 +13,12 @@ def press_key(key: str):
     pyautogui.press(key)
 
 def hotkey(*keys: str):
-    """복수 키 입력: ctrl+c, shift+tab 등"""
     combo = '+'.join(keys)
     logging.info(f"[KEYBOARD] 조합 키 입력: {combo}")
-    pyautogui.hotkey(*keys)
+
+    # win 키 포함되면 keyboard 라이브러리로 처리
+    if 'win' in [k.lower() for k in keys] or 'windows' in [k.lower() for k in keys]:
+        keyboard.press_and_release(combo.replace("win", "windows"))
+    else:
+        pyautogui.hotkey(*keys)
+

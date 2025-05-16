@@ -14,9 +14,5 @@ def main():
         logging.error("❌ scenario_1 실패: 자동화를 중단합니다.")
         return  
 
-    if not run_scenario("scenarios/scenario_2.json", config):
-        logging.error("❌ scenario_2 실패: 자동화를 중단합니다.")
-        return
-
 if __name__ == "__main__":
     main()

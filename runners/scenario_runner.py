@@ -61,59 +61,71 @@ def run_scenario(scenario_path, config):
             except ValueError:
                 min_match_count = config.get("min_match_count", 10)
 
-        # 결과 비교 먼저 처리
-        if key == "R":
-            if action == "screen":
-                image_path = os.path.join(config["image_folder"], target)
-                runner_logger.info(f"[매칭 확인] 화면에서 '{target}' 이미지 찾기")
+        # 결과 비교 처리
+        if key == "R" and action == "screen":
+            image_path = os.path.join(config["image_folder"], target)
+            runner_logger.info(f"[매칭 확인] 화면에서 '{target}' 이미지 찾기")
 
-                if not os.path.exists(image_path):
-                    runner_logger.error(f"❌ [매칭 실패] 결과 이미지 없음: {image_path}")
-                    return False
+            if not os.path.exists(image_path):
+                runner_logger.error(f"❌ [매칭 실패] 결과 이미지 없음: {image_path}")
+                return False
 
-                template = cv2.imread(image_path, cv2.IMREAD_COLOR)
-                screenshot = pyautogui.screenshot()
-                screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            template = cv2.imread(image_path, cv2.IMREAD_COLOR)
+            screenshot = pyautogui.screenshot()
+            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
 
-                result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
-                _, max_val, _, _ = cv2.minMaxLoc(result)
+            result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
+            _, max_val, _, _ = cv2.minMaxLoc(result)
 
-                runner_logger.info(f"[매칭 결과] 매칭 점수: {max_val:.3f} (기준: {threshold})")
+            runner_logger.info(f"[매칭 결과] 매칭 점수: {max_val:.3f} (기준: {threshold})")
 
-                if max_val >= threshold:
-                    runner_logger.info("🟢 [결과 일치] 다음 단계로 진행")
-                    continue
-                else:
-                    runner_logger.error("🔴 [결과 불일치] 시나리오 중단")
-                    return False
+            if max_val >= threshold:
+                runner_logger.info("🟢 [결과 일치] 다음 단계로 진행")
+                continue
             else:
-                runner_logger.warning(f"[결과 단계 무시] 알 수 없는 R action: {action}")
-                continue  # 알 수 없는 R 액션 무시
+                runner_logger.error("🔴 [결과 불일치] 시나리오 중단")
+                return False
 
-        # 일반 액션 (key == "A") 처리
+        elif key == "R":
+            runner_logger.warning(f"[결과 단계 무시] 알 수 없는 R action: {action}")
+            continue
+
+        # 일반 액션
         image_path = os.path.join(config["image_folder"], target)
 
-        if action == "click":
-            runner_logger.info(f"[시나리오] 클릭: {target} | method = {method} | min_match_count = {min_match_count}")
-            success = click_button(image_path, method=method, threshold=threshold, delay=duration, min_match_count=min_match_count)
-            if not success:
-                runner_logger.error(f"❌ 클릭 실패: {target} - 시나리오 중단")
-                return False
-            wait(duration)
+        if action in ["click", "double_click", "right_click"]:
+            # 로그 메시지 조립
+            action_map = {
+                "click": "클릭",
+                "double_click": "더블 클릭",
+                "right_click": "우클릭"
+            }
+            msg = f"[시나리오] {action_map[action]}: {target} | method = {method}"
 
-        elif action == "double_click":
-            runner_logger.info(f"[시나리오] 더블 클릭: {target} | method = {method} | min_match_count = {min_match_count}")
-            success = click_button(image_path, method=method, threshold=threshold, delay=duration, double_click=True, min_match_count=min_match_count)
-            if not success:
-                runner_logger.error(f"❌ 더블 클릭 실패: {target} - 시나리오 중단")
-                return False
-            wait(duration)
+            if method == "sift":
+                msg += f" | min_match_count = {min_match_count}"
+            elif method == "template":
+                msg += f" | threshold = {threshold}"
 
-        elif action == "right_click":
-            runner_logger.info(f"[시나리오] 우클릭: {target} | method = {method} | min_match_count = {min_match_count}")
-            success = click_button(image_path, method=method, threshold=threshold, delay=duration, button="right", min_match_count=min_match_count)
+            runner_logger.info(msg)
+
+            click_args = {
+                "image_path": image_path,
+                "method": method,
+                "threshold": threshold if method == "template" else None,
+                "delay": duration,
+                "min_match_count": min_match_count if method == "sift" else None
+            }
+
+            if action == "double_click":
+                click_args["double_click"] = True
+            elif action == "right_click":
+                click_args["button"] = "right"
+
+            success = click_button(**click_args)
+
             if not success:
-                runner_logger.error(f"❌ 우클릭 실패: {target} - 시나리오 중단")
+                runner_logger.error(f"❌ {action_map[action]} 실패: {target} - 시나리오 중단")
                 return False
             wait(duration)
 
