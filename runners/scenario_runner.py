@@ -33,6 +33,7 @@ def run_scenario(scenario_path, config):
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
         method = step.get("method", "template").strip()
+        position = step.get("position", "center").strip()  # position 기본값 추가
 
         # duration 처리
         duration = step.get("duration", config.get("delay", 0.5))
@@ -90,7 +91,7 @@ def run_scenario(scenario_path, config):
             runner_logger.warning(f"[결과 단계 무시] 알 수 없는 R action: {action}")
             continue
 
-        # 일반 액션
+        # 일반 액션 처리
         image_path = os.path.join(config["image_folder"], target)
 
         if action in ["click", "double_click", "right_click"]:
@@ -107,6 +108,7 @@ def run_scenario(scenario_path, config):
             elif method == "template":
                 msg += f" | threshold = {threshold}"
 
+            msg += f" | position = {position}"  # position 로그 추가
             runner_logger.info(msg)
 
             click_args = {
@@ -114,7 +116,8 @@ def run_scenario(scenario_path, config):
                 "method": method,
                 "threshold": threshold if method == "template" else None,
                 "delay": duration,
-                "min_match_count": min_match_count if method == "sift" else None
+                "min_match_count": min_match_count if method == "sift" else None,
+                "position": position  # click_button에 position 전달
             }
 
             if action == "double_click":
@@ -123,7 +126,6 @@ def run_scenario(scenario_path, config):
                 click_args["button"] = "right"
 
             success = click_button(**click_args)
-
             if not success:
                 runner_logger.error(f"❌ {action_map[action]} 실패: {target} - 시나리오 중단")
                 return False
