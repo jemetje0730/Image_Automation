@@ -5,7 +5,7 @@ import pyautogui
 import cv2
 import numpy as np
 from action.mouse import click_button
-from action.common import wait
+from action.common import wait as wait_for 
 from action.keyboard import type_text, press_key, hotkey
 from utils.runner_log import get_runner_logger
 
@@ -19,7 +19,19 @@ def run_scenario(scenario_path, config):
 
     try:
         with open(scenario_path, "r", encoding="utf-8") as f:
-            steps = json.load(f)
+            data = json.load(f)
+
+        # baseAction과 scenario 병합 처리
+        if isinstance(data, dict) and "baseAction" in data and "scenario" in data:
+            base_action = data["baseAction"]
+            steps = []
+            for step in data["scenario"]:
+                merged_step = base_action.copy()
+                merged_step.update(step)  # step 값이 base_action 덮어쓰기(오버라이딩)
+                steps.append(merged_step)
+        else:
+            steps = data
+
     except Exception as e:
         runner_logger.error(f"시나리오 파일(JSON) 파싱 실패: {e}")
         return False
@@ -33,14 +45,19 @@ def run_scenario(scenario_path, config):
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
         method = step.get("method", "template").strip()
-        position = step.get("position", "center").strip()  # position 기본값 추가
 
-        # duration 처리
-        duration = step.get("duration", config.get("delay", 0.5))
+        pos_value = step.get("position", "center")
+        if isinstance(pos_value, str):
+            position = pos_value.strip()
+        else:
+            position = pos_value
+
+        # wait 처리 (기본값은 config 또는 0.5)
+        wait_time = step.get("wait", config.get("delay", 0.5))
         try:
-            duration = float(duration)
+            wait_time = float(wait_time)
         except ValueError:
-            duration = config.get("delay", 0.5)
+            wait_time = config.get("delay", 0.5)
 
         # threshold 처리
         threshold = step.get("threshold", "")
@@ -95,7 +112,6 @@ def run_scenario(scenario_path, config):
         image_path = os.path.join(config["image_folder"], target)
 
         if action in ["click", "double_click", "right_click"]:
-            # 로그 메시지 조립
             action_map = {
                 "click": "클릭",
                 "double_click": "더블 클릭",
@@ -108,16 +124,16 @@ def run_scenario(scenario_path, config):
             elif method == "template":
                 msg += f" | threshold = {threshold}"
 
-            msg += f" | position = {position}"  # position 로그 추가
+            msg += f" | position = {position}"
             runner_logger.info(msg)
 
             click_args = {
                 "image_path": image_path,
                 "method": method,
                 "threshold": threshold if method == "template" else None,
-                "delay": duration,
+                "delay": wait_time,
                 "min_match_count": min_match_count if method == "sift" else None,
-                "position": position  # click_button에 position 전달
+                "position": position
             }
 
             if action == "double_click":
@@ -129,23 +145,23 @@ def run_scenario(scenario_path, config):
             if not success:
                 runner_logger.error(f"❌ {action_map[action]} 실패: {target} - 시나리오 중단")
                 return False
-            wait(duration)
+            wait_for(wait_time)
 
         elif action == "hotkey":
             keys = target.split("+")
             runner_logger.info(f"[시나리오] 조합 키 입력: {target}")
             hotkey(*keys)
-            wait(duration)
+            wait_for(wait_time)
 
         elif action == "type":
             runner_logger.info(f"[시나리오] 텍스트 입력: {target}")
             type_text(target)
-            wait(duration)
+            wait_for(wait_time)
 
         elif action == "press":
             runner_logger.info(f"[시나리오] 키 누름: {target}")
             press_key(target)
-            wait(duration)
+            wait_for(wait_time)
 
         else:
             runner_logger.warning(f"[시나리오] 알 수 없는 액션: {action}")

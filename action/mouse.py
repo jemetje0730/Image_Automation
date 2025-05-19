@@ -14,29 +14,36 @@ def click_button(image_path, method="template", threshold=0.85, delay=0.5,
         return False
 
     if pos:
-        x, y = pos
+        center_x, center_y = pos
         w, h = size
-        offset = 20  # 클릭 위치 여유
 
+        # 문자열 position을 비율로 매핑
         position_map = {
-            "center": (x, y),
-            "top_left": (x - w // 2 + offset, y - h // 2 + offset),
-            "top_right": (x + w // 2 - offset, y - h // 2 + offset),
-            "bottom_left": (x - w // 2 + offset, y + h // 2 - offset),
-            "bottom_right": (x + w // 2 - offset, y + h // 2 - offset),
-            "top": (x, y - h // 2 + offset),
-            "bottom": (x, y + h // 2 - offset),
-            "left": (x - w // 2 + offset, y),
-            "right": (x + w // 2 - offset, y),
+            "center": (0.5, 0.5),
+            "top_left": (0.0, 0.0),
+            "top_right": (1.0, 0.0),
+            "bottom_left": (0.0, 1.0),
+            "bottom_right": (1.0, 1.0),
+            "top": (0.5, 0.0),
+            "bottom": (0.5, 1.0),
+            "left": (0.0, 0.5),
+            "right": (1.0, 0.5),
         }
 
-        click_x, click_y = position_map.get(position, (x, y))
+        if isinstance(position, str):
+            x_ratio, y_ratio = position_map.get(position, (0.5, 0.5))
+        elif isinstance(position, (tuple, list)) and len(position) == 2:
+            x_ratio, y_ratio = position
+        else:
+            logging.error(f"잘못된 position 값: {position}")
+            return False
+
+        click_x = int(center_x + (x_ratio - 0.5) * w)
+        click_y = int(center_y + (y_ratio - 0.5) * h)
+
 
         pyautogui.moveTo(click_x, click_y, duration=0.3)
-        if double_click:
-            pyautogui.click(clicks=2, button=button)
-        else:
-            pyautogui.click(button=button)
+        pyautogui.click(button=button, clicks=2 if double_click else 1)
 
         logging.info(f"{method} 방식으로 {button} 버튼 {'더블클릭' if double_click else '클릭'} 완료: {image_path}")
         time.sleep(delay)
