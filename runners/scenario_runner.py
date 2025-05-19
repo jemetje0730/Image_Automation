@@ -45,7 +45,12 @@ def run_scenario(scenario_path, config):
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
         method = step.get("method", "template").strip()
-        position = step.get("position", "center").strip()
+
+        pos_value = step.get("position", "center")
+        if isinstance(pos_value, str):
+            position = pos_value.strip()
+        else:
+            position = pos_value
 
         # wait 처리 (기본값은 config 또는 0.5)
         wait_time = step.get("wait", config.get("delay", 0.5))
