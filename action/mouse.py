@@ -16,7 +16,7 @@ def click_button(image_path, method="template", threshold=0.85, delay=0.5,
     if pos:
         x, y = pos
         w, h = size
-        offset = 15  # 클릭 위치 안전 여유
+        offset = 20  # 클릭 위치 여유
 
         position_map = {
             "center": (x, y),
