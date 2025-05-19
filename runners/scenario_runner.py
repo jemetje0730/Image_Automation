@@ -19,7 +19,19 @@ def run_scenario(scenario_path, config):
 
     try:
         with open(scenario_path, "r", encoding="utf-8") as f:
-            steps = json.load(f)
+            data = json.load(f)
+
+        # baseAction과 scenario 병합 처리
+        if isinstance(data, dict) and "baseAction" in data and "scenario" in data:
+            base_action = data["baseAction"]
+            steps = []
+            for step in data["scenario"]:
+                merged_step = base_action.copy()
+                merged_step.update(step)  # step 값이 base_action 덮어쓰기(오버라이딩)
+                steps.append(merged_step)
+        else:
+            steps = data
+
     except Exception as e:
         runner_logger.error(f"시나리오 파일(JSON) 파싱 실패: {e}")
         return False
@@ -35,7 +47,7 @@ def run_scenario(scenario_path, config):
         method = step.get("method", "template").strip()
         position = step.get("position", "center").strip()
 
-        # wait 처리
+        # wait 처리 (기본값은 config 또는 0.5)
         wait_time = step.get("wait", config.get("delay", 0.5))
         try:
             wait_time = float(wait_time)
