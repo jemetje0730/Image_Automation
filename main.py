@@ -10,17 +10,12 @@ def main():
     config = load_config("config/config.yaml")
     logging.info("자동화 툴 시작")
 
-    if not run_scenario("scenarios/scenario_1.json", config):
-        logging.error("❌ scenario_1 실패: 자동화를 중단합니다.")
-        return
+    #if not run_scenario("scenarios/scenario_1.json", config):
+        #logging.error("❌ scenario_1 실패: 자동화를 중단합니다.")
+        #return
     
     if not run_scenario(1, config, input_type="db"):
         logging.error("❌ DB 시나리오 실패: 자동화를 중단합니다.")
-        return
-
-    json_path = "scenarios/scenario_2.json"
-    if not run_scenario(json_path, config, input_type="json"):
-        logging.error("❌ scenario_2 실패: 자동화를 중단합니다.")
         return
 
     logging.info("🎉 모든 시나리오 실행 완료")
