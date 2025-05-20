@@ -1,9 +1,9 @@
 import logging
 import os
 import json
-import sqlite3
 import pyautogui
 import cv2
+import ast
 import numpy as np
 from action.mouse import click_button
 from action.common import wait as wait_for
@@ -16,7 +16,6 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
 
     try:
         if input_type == "json":
-            # 파일 경로인지 확인
             if not os.path.exists(scenario_path_or_id):
                 logging.error(f"시나리오 파일이 존재하지 않습니다: {scenario_path_or_id}")
                 return False
@@ -51,7 +50,6 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
         logging.error(f"시나리오 로딩 중 예외 발생: {e}")
         return False
 
-    # 아래는 기존 그대로, runner_logger는 위에서 선언됐으니 사용 가능
     for step in steps:
         if "key" not in step:
             runner_logger.error(f"시나리오 단계에 'key'가 없습니다: {step} - 시나리오 중단")
@@ -60,37 +58,57 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
         key = step.get("key", "A").strip()
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
-        method = step.get("method", "template").strip()
 
-        pos_value = step.get("position", "center")
-        if isinstance(pos_value, str):
-            position = pos_value.strip()
+        # method 기본값 'template'
+        method = (step.get("method") or "template").strip()
+
+        # position 기본값 'center'
+        pos_value = step.get("position")
+        if pos_value is None:
+            position = "center"
+        elif isinstance(pos_value, str):
+            try:
+                # 문자열이 리스트 형태면 실제 리스트로 변환
+                position = ast.literal_eval(pos_value)
+                if not (isinstance(position, (list, tuple)) and len(position) == 2):
+                    position = pos_value.strip()  # 그냥 문자열로 처리
+            except:
+                position = pos_value.strip()
         else:
             position = pos_value
 
-        wait_time = step.get("wait", config.get("delay", 0.5))
-        try:
-            wait_time = float(wait_time)
-        except ValueError:
-            wait_time = config.get("delay", 0.5)
+        # wait 기본값 0.5
+        wait_time = step.get("wait")
+        if wait_time is None:
+            wait_time = 0.5
+        else:
+            try:
+                wait_time = float(wait_time)
+            except Exception:
+                wait_time = 0.5
 
-        threshold = step.get("threshold", "")
-        if threshold == "" or threshold is None:
-            threshold = config.get("threshold")
+        # threshold 기본값 0.85
+        threshold = step.get("threshold")
+        if threshold is None or threshold == "":
+            threshold = 0.85
         else:
             try:
                 threshold = float(threshold)
-            except ValueError:
-                threshold = config.get("threshold")
+            except Exception:
+                threshold = 0.85
 
-        min_match_count = step.get("min_match_count", "")
-        if min_match_count == "" or min_match_count is None:
-            min_match_count = config.get("min_match_count", 10)
+        # min_match_count 기본값 10 (sift일 때만)
+        min_match_count = step.get("min_match_count")
+        if method == "sift":
+            if min_match_count is None or min_match_count == "":
+                min_match_count = 10
+            else:
+                try:
+                    min_match_count = int(min_match_count)
+                except Exception:
+                    min_match_count = 10
         else:
-            try:
-                min_match_count = int(min_match_count)
-            except ValueError:
-                min_match_count = config.get("min_match_count", 10)
+            min_match_count = None
 
         if key == "R" and action == "screen":
             image_path = os.path.join(config["image_folder"], target)
@@ -178,4 +196,3 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
             runner_logger.warning(f"[시나리오] 알 수 없는 액션: {action}")
 
     return True
-
