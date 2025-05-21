@@ -10,6 +10,8 @@ from action.common import wait as wait_for
 from action.keyboard import type_text, press_key, hotkey
 from db.db_loader import load_scenario_from_db
 from utils.runner_log import get_runner_logger
+from detector.image_detector import find_image_by_template, find_image_by_sift  
+
 
 def run_scenario(scenario_path_or_id, config, input_type='json'):
     steps = []
@@ -59,25 +61,21 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
 
-        # method 기본값 'template'
         method = (step.get("method") or "template").strip()
 
-        # position 기본값 'center'
         pos_value = step.get("position")
         if pos_value is None:
             position = "center"
         elif isinstance(pos_value, str):
             try:
-                # 문자열이 리스트 형태면 실제 리스트로 변환
                 position = ast.literal_eval(pos_value)
                 if not (isinstance(position, (list, tuple)) and len(position) == 2):
-                    position = pos_value.strip()  # 그냥 문자열로 처리
+                    position = pos_value.strip()
             except:
                 position = pos_value.strip()
         else:
             position = pos_value
 
-        # wait 기본값 0.5
         wait_time = step.get("wait")
         if wait_time is None:
             wait_time = 0.5
@@ -87,7 +85,6 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
             except Exception:
                 wait_time = 0.5
 
-        # threshold 기본값 0.85
         threshold = step.get("threshold")
         if threshold is None or threshold == "":
             threshold = 0.85
@@ -97,7 +94,6 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
             except Exception:
                 threshold = 0.85
 
-        # min_match_count 기본값 10 (sift일 때만)
         min_match_count = step.get("min_match_count")
         if method == "sift":
             if min_match_count is None or min_match_count == "":
@@ -118,20 +114,27 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
                 runner_logger.error(f"❌ [매칭 실패] 결과 이미지 없음: {image_path}")
                 return False
 
-            template = cv2.imread(image_path, cv2.IMREAD_COLOR)
-            screenshot = pyautogui.screenshot()
-            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            # method에 따라 이미지 찾기
+            if method == "template":
+                found = find_image_by_template(image_path, threshold=threshold)
+                if found is not None:
+                    runner_logger.info(f"🟢 [Template 결과 일치] 다음 단계로 진행")
+                    continue
+                else:
+                    runner_logger.error("🔴 [Template 결과 불일치] 시나리오 중단")
+                    return False
 
-            result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
-            _, max_val, _, _ = cv2.minMaxLoc(result)
+            elif method == "sift":
+                found = find_image_by_sift(image_path, min_match_count=min_match_count)
+                if found is not None:
+                    runner_logger.info(f"🟢 [SIFT 결과 일치] 다음 단계로 진행")
+                    continue
+                else:
+                    runner_logger.error("🔴 [SIFT 결과 불일치] 시나리오 중단")
+                    return False
 
-            runner_logger.info(f"[매칭 결과] 매칭 점수: {max_val:.3f} (기준: {threshold})")
-
-            if max_val >= threshold:
-                runner_logger.info("🟢 [결과 일치] 다음 단계로 진행")
-                continue
             else:
-                runner_logger.error("🔴 [결과 불일치] 시나리오 중단")
+                runner_logger.error(f"지원하지 않는 매칭 방법: {method}")
                 return False
 
         elif key == "R":
