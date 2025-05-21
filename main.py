@@ -11,9 +11,9 @@ def main():
     manage_log_files()
     config = load_config("config/config.yaml")
     logging.info("자동화 툴 시작")
-
-    # 시나리오 리네이밍 및 실행
     rename_scenarios()
+
+    # JSON 시나리오 실행
     if not run_json_scenarios(config):
         return
 
