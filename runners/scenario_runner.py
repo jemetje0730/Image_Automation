@@ -8,7 +8,7 @@ import numpy as np
 from action.mouse import click_button
 from action.common import wait as wait_for
 from action.keyboard import type_text, press_key, hotkey
-from utils.db_loader import load_scenario_from_db
+from db.db_loader import load_scenario_from_db
 from utils.runner_log import get_runner_logger
 
 def run_scenario(scenario_path_or_id, config, input_type='json'):
