@@ -45,35 +45,44 @@ def load_scenario_from_db(db_path="scenario.db", base_id=1):
     conn.close()
     return steps
 
-def add_scenario_to_db(db_path, base_id, base_actions, steps):
+def add_scenario_to_db(db_path, base_id, base_actions=None, steps=[]):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
-    # 여러 base_action 추가
-    for base_action in base_actions:
-        cur.execute('''
-            INSERT OR REPLACE INTO baseAction (base_id, key, action, wait)
-            VALUES (?, ?, ?, ?)
-        ''', (base_id, base_action.get("key"), base_action.get("action"), base_action.get("wait")))
+    # base_actions가 있으면만 insert
+    if base_actions:
+        for base_action in base_actions:
+            cur.execute("""
+                INSERT OR IGNORE INTO baseAction (base_id, key, action, wait)
+                VALUES (?, ?, ?, ?)
+            """, (
+                base_id,
+                base_action.get("key"),
+                base_action.get("action"),
+                base_action.get("wait", 0.5)
+            ))
 
-    # scenario 삽입
+    # 시나리오 단계 삽입
     for step in steps:
-        cur.execute('''
-            INSERT INTO scenario (base_id, key, target, position, wait, threshold, min_match_count, method)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
+        cur.execute("""
+            INSERT INTO scenario (
+                base_id, key, target, position, wait,
+                threshold, min_match_count, method
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
             base_id,
             step.get("key"),
             step.get("target"),
             step.get("position"),
-            step.get("wait"),
+            step.get("wait", 0.5),
             step.get("threshold"),
             step.get("min_match_count"),
-            step.get("method"),
+            step.get("method")
         ))
 
     conn.commit()
     conn.close()
+
 
 def delete_scenario_steps_from_db(db_path, base_id):
     conn = sqlite3.connect(db_path)
