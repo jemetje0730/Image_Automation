@@ -34,6 +34,10 @@ image_automation/
 ├── runners/                    # 시나리오 실행기 (입력 → 동작 매핑)
 │   ├── __init__.py
 │   └── scenario_runner.py      # csv, json, yaml 기반 자동화 시나리오 실행
+│ 
+├── db/                         # database 연결
+│   ├── db_loader.py            # database 로딩
+│   └── db_setup.py             # database 초기 key setup
 │
 ├── scenarios/                  # 자동화 시나리오 정의
 │   └── scenario.json           # 사용자가 설정한 시나리오
@@ -42,7 +46,8 @@ image_automation/
 │   ├── __init__.py
 │   ├── config_loader.py        # YAML 파일 파이썬 객체로 변환
 │   ├── log_clean.py            # 로그 압축 및 정리
-│   ├── runner_log.py           # 사니리오 로그 출력
+│   ├── arrange_scenario.py     # 시나리오 순서 정리 및 전체 실행
+│   ├── runner_log.py           # 시니리오 로그 출력
 │   └── app_log.py              # 모든 로그 메시지 출력 
 │
 ├── config/                     # 설정 정보 분리
