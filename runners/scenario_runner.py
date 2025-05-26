@@ -1,17 +1,13 @@
 import logging
 import os
 import json
-import pyautogui
-import cv2
 import ast
-import numpy as np
 from action.mouse import click_button
 from action.common import wait as wait_for
 from action.keyboard import type_text, press_key, hotkey
 from db.db_loader import load_scenario_from_db
 from utils.runner_log import get_runner_logger
-from detector.image_detector import find_image_by_template, find_image_by_sift  
-
+from detector.image_detector import find_image_by_template, find_image_by_sift
 
 def run_scenario(scenario_path_or_id, config, input_type='json'):
     steps = []
@@ -61,8 +57,6 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
         action = step.get("action", "").strip()
         target = step.get("target", "").strip()
 
-        method = (step.get("method") or "template").strip()
-
         pos_value = step.get("position")
         if pos_value is None:
             position = "center"
@@ -87,96 +81,60 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
 
         threshold = step.get("threshold")
         if threshold is None or threshold == "":
-            threshold = 0.85
+            threshold = float(config.get("threshold", 0.85))
         else:
             try:
                 threshold = float(threshold)
             except Exception:
-                threshold = 0.85
+                threshold = float(config.get("threshold", 0.85))
 
-        min_match_count = step.get("min_match_count")
-        if method == "sift":
-            if min_match_count is None or min_match_count == "":
-                min_match_count = 10
-            else:
-                try:
-                    min_match_count = int(min_match_count)
-                except Exception:
-                    min_match_count = 10
+        sift_threshold = step.get("sift_threshold")
+        if sift_threshold is None or sift_threshold == "":
+            sift_threshold = float(config.get("sift_threshold", threshold))
         else:
-            min_match_count = None
+            try:
+                sift_threshold = float(sift_threshold)
+            except Exception:
+                sift_threshold = float(config.get("sift_threshold", threshold))
+
+        image_path = os.path.join(config["image_folder"], target)
 
         if key == "R" and action == "screen":
-            image_path = os.path.join(config["image_folder"], target)
             runner_logger.info(f"[매칭 확인] 화면에서 '{target}' 이미지 찾기")
 
             if not os.path.exists(image_path):
                 runner_logger.error(f"❌ [매칭 실패] 결과 이미지 없음: {image_path}")
                 return False
 
-            # method에 따라 이미지 찾기
-            if method == "template":
-                found = find_image_by_template(image_path, threshold=threshold)
-                if found is not None:
-                    runner_logger.info(f"🟢 [Template 결과 일치] 다음 단계로 진행")
-                    continue
-                else:
-                    runner_logger.error("🔴 [Template 결과 불일치] 시나리오 중단")
-                    return False
+            found = find_image_by_template(image_path, threshold=threshold)
+            if found is None:
+                found = find_image_by_sift(image_path, sift_threshold=sift_threshold)
 
-            elif method == "sift":
-                found = find_image_by_sift(image_path, min_match_count=min_match_count)
-                if found is not None:
-                    runner_logger.info(f"🟢 [SIFT 결과 일치] 다음 단계로 진행")
-                    continue
-                else:
-                    runner_logger.error("🔴 [SIFT 결과 불일치] 시나리오 중단")
-                    return False
-
+            if found is not None:
+                runner_logger.info(f"🟢 [이미지 매칭 성공] 다음 단계로 진행")
+                continue
             else:
-                runner_logger.error(f"지원하지 않는 매칭 방법: {method}")
+                runner_logger.error("🔴 [모든 이미지 매칭 실패] 시나리오 중단")
                 return False
 
-        elif key == "R":
-            runner_logger.warning(f"[결과 단계 무시] 알 수 없는 R action: {action}")
-            continue
-
-        image_path = os.path.join(config["image_folder"], target)
-
         if action in ["click", "double_click", "right_click"]:
-            action_map = {
-                "click": "클릭",
-                "double_click": "더블 클릭",
-                "right_click": "우클릭"
-            }
-            msg = f"[시나리오] {action_map[action]}: {target} | method = {method}"
-
-            if method == "sift":
-                msg += f" | min_match_count = {min_match_count}"
-            elif method == "template":
-                msg += f" | threshold = {threshold}"
-
-            msg += f" | position = {position}"
-            runner_logger.info(msg)
+            runner_logger.info(f"[시나리오] 클릭 관련 작업 수행: {target}")
 
             click_args = {
                 "image_path": image_path,
-                "method": method,
-                "threshold": threshold if method == "template" else None,
+                "threshold": threshold,
+                "sift_threshold": sift_threshold,
                 "delay": wait_time,
-                "min_match_count": min_match_count if method == "sift" else None,
-                "position": position
+                "position": position,
+                "button": "right" if action == "right_click" else "left",
+                "double_click": action == "double_click"
             }
-
-            if action == "double_click":
-                click_args["double_click"] = True
-            elif action == "right_click":
-                click_args["button"] = "right"
 
             success = click_button(**click_args)
             if not success:
-                runner_logger.error(f"❌ {action_map[action]} 실패: {target} - 시나리오 중단")
+                runner_logger.error(f"❌ 클릭 실패: {target} - 시나리오 중단")
                 return False
+
             wait_for(wait_time)
 
         elif action == "hotkey":
