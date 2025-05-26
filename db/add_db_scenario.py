@@ -6,10 +6,10 @@ data = {
     {"target": "lidar.png"},
     {"target": "channel.png", "position": [0.85, 0.5]},
     {"target": "confirm.png", "position": [0.85, 0.5]},
-    {"target": "detect.png", "wait": 0, "position": [0.85, 0.85]},
-    {"target": "detect.png", "wait": 0, "position": [0.85, 0.85]},
-    {"target": "detect.png", "wait": 0, "position": [0.85, 0.85]},
-    {"target": "confirm2.png", "wait": 1, "position": [0.85, 0.85]},
+    {"target": "detect.png", "wait": 0, "position": [0.85, 0.75]},
+    {"target": "detect.png", "wait": 0, "position": [0.85, 0.75]},
+    {"target": "detect.png", "wait": 0, "position": [0.85, 0.75]},
+    {"target": "confirm2.png", "wait": 1, "position": [0.90, 0.85]},
     {"target": "confirm3.png", "wait": 0.5, "position": [0.85, 0.85]},
     {"target": "exit.png", "position": "right"}
   ]
