@@ -1,4 +1,3 @@
-# utils/rename_scenario.py
 import os
 import re
 from runners.scenario_runner import run_scenario

@@ -1,4 +1,3 @@
-# main.py
 import logging
 from utils.app_log import setup_logging
 from utils.config_loader import load_config
