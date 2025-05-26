@@ -1,5 +1,5 @@
-threshold: 0.85       # TEMPLATE
-sift_threshold: 0.85  # SIFT 
+threshold: 0.85      # TEMPLATE
+sift_threshold: 0.7  # SIFT 
 min_match_count: 10
 delay: 0.5
 image_folder: assets

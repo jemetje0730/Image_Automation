@@ -3,7 +3,7 @@ import time
 import logging
 from detector.image_detector import find_image_by_template, find_image_by_sift
 
-def click_button(image_path, threshold=0.85, sift_threshold=0.85, min_match_count=10, delay=0.5,
+def click_button(image_path, threshold=0.85, sift_threshold=0.7, min_match_count=10, delay=0.5,
                  double_click=False, button="left", position="center"):
     used_method = None
     pos, size = find_image_by_template(image_path, threshold=threshold, return_size=True)

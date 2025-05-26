@@ -81,21 +81,22 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
 
         threshold = step.get("threshold")
         if threshold is None or threshold == "":
-            threshold = float(config.get("threshold", 0.85))
+            threshold = float(config.get("threshold", 0.85))  # 기본값 
         else:
             try:
                 threshold = float(threshold)
             except Exception:
-                threshold = float(config.get("threshold", 0.85))
+                threshold = float(config.get("threshold", 0.85))  # fallback
 
         sift_threshold = step.get("sift_threshold")
         if sift_threshold is None or sift_threshold == "":
-            sift_threshold = float(config.get("sift_threshold", threshold))
+            sift_threshold = float(config.get("sift_threshold", 0.7))  
         else:
             try:
                 sift_threshold = float(sift_threshold)
             except Exception:
-                sift_threshold = float(config.get("sift_threshold", threshold))
+                sift_threshold = float(config.get("sift_threshold", 0.7))
+
 
         image_path = os.path.join(config["image_folder"], target)
 
