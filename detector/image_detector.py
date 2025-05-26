@@ -43,7 +43,7 @@ def find_image_by_template(image_path, threshold=0.85, return_size=False):
     logging.warning(f"'{image_path}' 탐지 실패 | 최고 점수: {best_match:.3f}")
     return (None, None) if return_size else None
 
-def find_image_by_sift(image_path, sift_threshold=0.85, min_match_count=10, return_size=False):
+def find_image_by_sift(image_path, sift_threshold=0.7, min_match_count=10, return_size=False):
     if not os.path.exists(image_path):
         logging.error(f"[SIFT] 이미지 파일 없음: {image_path}")
         return (None, None) if return_size else None
