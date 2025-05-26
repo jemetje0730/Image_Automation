@@ -43,8 +43,7 @@ def find_image_by_template(image_path, threshold=0.85, return_size=False):
     logging.warning(f"'{image_path}' 탐지 실패 | 최고 점수: {best_match:.3f}")
     return (None, None) if return_size else None
 
-
-def find_image_by_sift(image_path, min_match_count=10, return_size=False):
+def find_image_by_sift(image_path, sift_threshold=0.85, min_match_count=10, return_size=False):
     if not os.path.exists(image_path):
         logging.error(f"[SIFT] 이미지 파일 없음: {image_path}")
         return (None, None) if return_size else None
@@ -67,17 +66,17 @@ def find_image_by_sift(image_path, min_match_count=10, return_size=False):
 
     good_matches = []
     for m, n in matches:
-        if m.distance < 0.75 * n.distance:
+        if m.distance < sift_threshold * n.distance:
             good_matches.append(m)
 
     if len(good_matches) < min_match_count:
-        logging.info(f"[SIFT] 매칭 실패 - 매치 수: {len(good_matches)} (기준: {min_match_count})")
+        logging.info(f"[SIFT] 매칭 실패 - 매치 수: {len(good_matches)} (최소 필요: {min_match_count})")
         return (None, None) if return_size else None
 
     match_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
-    avg_x = int(np.mean(match_pts[:, 0]))
-    avg_y = int(np.mean(match_pts[:, 1]))
+    median_x = int(np.median(match_pts[:, 0]))
+    median_y = int(np.median(match_pts[:, 1]))
 
     h, w = template.shape[:2]
     logging.info(f"[SIFT] '{image_path}' 매칭 성공 | 매치 수: {len(good_matches)}")
-    return ((avg_x, avg_y), (w, h)) if return_size else (avg_x, avg_y)
+    return ((median_x, median_y), (w, h)) if return_size else (median_x, median_y)
