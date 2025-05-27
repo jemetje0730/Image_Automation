@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS scenario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     base_id INTEGER NOT NULL,
     key TEXT NOT NULL,
+    action TEXT,
     target TEXT NOT NULL,
     position TEXT,
     wait REAL,
