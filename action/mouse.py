@@ -1,18 +1,28 @@
 import pyautogui
 import time
 import logging
-from detector.image_detector import find_image_by_template, find_image_by_sift
+from detector.image_detector import detect_image
 
-def click_button(image_path, threshold=0.85, sift_threshold=0.7, min_match_count=10, delay=0.5,
-                 double_click=False, button="left", position="center"):
-    used_method = None
-    pos, size = find_image_by_template(image_path, threshold=threshold, return_size=True)
-    if pos is not None:
-        used_method = "TEMPLATE"
-    else:
-        pos, size = find_image_by_sift(image_path, sift_threshold=sift_threshold, min_match_count=min_match_count, return_size=True)
-        if pos is not None:
-            used_method = "SIFT"
+def click_button(image_path, threshold, sift_threshold, min_match_count, min_match_ratio, delay,
+                 double_click=False, button="left", position="center", info_score_threshold=None):
+
+    if info_score_threshold is None:
+        logging.error("info_score_threshold 값이 제공되지 않았습니다.")
+        return False
+
+    config = {
+        "threshold": threshold,
+        "sift_threshold": sift_threshold,
+        "min_match_count": min_match_count,
+        "info_score_threshold": info_score_threshold,
+        "min_match_ratio": min_match_ratio
+    }
+
+    pos, size = detect_image(
+        image_path,
+        config=config,
+        return_size=True
+    )
 
     if pos:
         center_x, center_y = pos
@@ -44,10 +54,9 @@ def click_button(image_path, threshold=0.85, sift_threshold=0.7, min_match_count
         pyautogui.moveTo(click_x, click_y, duration=0.3)
         pyautogui.click(button=button, clicks=2 if double_click else 1)
 
-        logging.info(f"이미지 클릭 완료: {image_path} | 방식: {used_method}")
+        logging.info(f"[MOUSE] 이미지 클릭 완료: {image_path}")
         time.sleep(delay)
         return True
     else:
-        logging.error(f"이미지 클릭 실패: {image_path}")
+        logging.error(f"[MOUSE] 이미지 클릭 실패: {image_path}")
         return False
-

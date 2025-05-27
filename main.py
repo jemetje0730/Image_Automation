@@ -21,7 +21,7 @@ def main():
         logging.error("❌ DB 시나리오 실패: 자동화를 중단합니다.")
         return
 
-    logging.info("🎉 모든 시나리오 실행 완료")
+    logging.info("[MAIN] 모든 시나리오 실행 완료")
 
 if __name__ == "__main__":
     main()

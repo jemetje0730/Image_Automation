@@ -1,6 +1,8 @@
+info_score_threshold: 0.4
 threshold: 0.85      # TEMPLATE
 sift_threshold: 0.7  # SIFT 
-min_match_count: 10
+min_match_ratio: 0.1  
+min_match_count: null
 delay: 0.5
 image_folder: assets
 db_path: "scenarios/scenario.db"

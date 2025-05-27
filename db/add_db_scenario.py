@@ -11,8 +11,16 @@ data = {
     {"target": "detect.png", "wait": 0, "position": [0.85, 0.75]},
     {"target": "confirm2.png", "wait": 1, "position": [0.90, 0.85]},
     {"target": "confirm3.png", "wait": 0.5, "position": [0.95, 0.85]},
-    {"target": "exit.png", "position": "right"}
-  ]
+    {"target": "exit.png", "position": "right"},
+    {"key": "R", "action": "screen", "target": "result2.png", "wait": 0.5},
+    # step 추가
+    {"target": "search.png", "wait": 0.5,},
+    {"action": "type", "target": "microsoft edge"},
+    {"action": "press", "target": "enter"},
+    {"action": "type", "target": "gp"},
+    {"action": "press", "target": "enter"},
+    {"action": "hotkey", "target": "ctrl+w"}
+    ]
 }
 
 def pos_to_str(pos):
@@ -24,7 +32,8 @@ def add_scenario():
     steps = []
     for step in data["scenario"]:
         steps.append({
-            "key": "A",  # baseAction의 key
+            "key": step.get("key", "A"), # 기본 key는 "A"
+            "action": step.get("action", None),
             "target": step["target"],
             "position": pos_to_str(step.get("position")),
             "wait": step.get("wait", 0.5),
