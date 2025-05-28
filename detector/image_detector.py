@@ -58,16 +58,16 @@ def find_image_by_sift(image_path, sift_threshold=0.7, min_match_ratio=0.1, min_
 
     total_kp = len(kp1)
 
-    # 키포인트가 5개 미만이면 템플릿 매칭으로 전환
-    if des1 is None or des2 is None or total_kp < 5:
+    # 키포인트가 10개 미만이면 템플릿 매칭으로 전환
+    if des1 is None or des2 is None or total_kp < 10:
         logging.warning(f"[SIFT] 전체 키포인트 부족 → Template Matching 사용")
         return find_image_by_template(image_path, threshold=0.85, return_size=return_size)
 
     # 최소 매칭 기준 설정
     if min_match_count is None:
         calc_count = int(total_kp * min_match_ratio)
-        # 5 이상, total_kp 이하로 보정
-        min_match_count = min(max(calc_count, 5), total_kp)
+        # 10 이상, total_kp 이하로 보정
+        min_match_count = min(max(calc_count, 10), total_kp)
 
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1, des2, k=2)

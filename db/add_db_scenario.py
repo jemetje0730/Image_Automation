@@ -14,12 +14,13 @@ data = {
     {"target": "exit.png", "position": "right"},
     {"key": "R", "action": "screen", "target": "result2.png", "wait": 0.5},
     # step 추가
-    {"target": "search.png", "wait": 0.5,},
+    {"target": "search.png"},
     {"action": "type", "target": "microsoft edge"},
     {"action": "press", "target": "enter"},
     {"action": "type", "target": "gp"},
-    {"action": "press", "target": "enter"},
-    {"action": "hotkey", "target": "ctrl+w"}
+    {"action": "press", "target": "enter", "wait": 5},
+    {"target": "out.png", "wait": 3},
+    {"target": "out.png"}
     ]
 }
 
