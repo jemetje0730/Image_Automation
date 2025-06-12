@@ -97,5 +97,19 @@ def run_scenario():
     return jsonify({"status": "success", "message": "모든 시나리오 실행 완료"})
 
 if __name__ == "__main__":
+    import logging
+
+    # Flask 및 Werkzeug 로거 가져오기
+    log_flask = logging.getLogger('flask.app')
+    log_werkzeug = logging.getLogger('werkzeug')
+    log_internal = logging.getLogger('werkzeug._internal')
+
+    # 로그 레벨 WARNING 이상으로 올리기 (INFO 로그 숨김)
+    log_flask.setLevel(logging.WARNING)
+    log_werkzeug.setLevel(logging.WARNING)
+    log_internal.setLevel(logging.WARNING)
+
     app.run(port=5000)
+
+
 
