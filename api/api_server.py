@@ -8,7 +8,7 @@ if BASE_DIR not in sys.path:
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS  
 import subprocess
-import sqlite3
+from db.db_setup import create_db_with_scenarios
 import logging
 
 from utils.app_log import setup_logging
@@ -56,7 +56,6 @@ def save_scenario():
     steps = request.json
 
     try:
-        # 자동 증가된 파일 이름 생성
         existing_files = os.listdir(SCENARIOS_FOLDER)
         db_files = [f for f in existing_files if re.match(r"\d+_scenario\.db$", f)]
         next_index = 1
@@ -67,70 +66,14 @@ def save_scenario():
         new_db_filename = f"{next_index}_scenario.db"
         new_db_path = os.path.join(SCENARIOS_FOLDER, new_db_filename)
 
-        # 새 DB 생성 및 테이블 세팅
-        import db.db_setup as setup  # 💡 db_setup 내부 로직을 함수화하면 더 깔끔
-        conn = sqlite3.connect(new_db_path)
-        cur = conn.cursor()
-
-        # 테이블 생성
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS baseAction (
-                base_id INTEGER NOT NULL,
-                key TEXT NOT NULL,
-                action TEXT NOT NULL,
-                wait REAL DEFAULT 0.5,
-                PRIMARY KEY (base_id, key)
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS scenario (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                base_id INTEGER NOT NULL,
-                key TEXT NOT NULL,
-                action TEXT,
-                target TEXT NOT NULL,
-                position TEXT,
-                wait REAL,
-                threshold REAL,
-                min_match_count INTEGER,
-                method TEXT,
-                FOREIGN KEY (base_id) REFERENCES baseAction(base_id)
-            )
-        """)
-        # 기본 baseAction 삽입
-        cur.execute("INSERT INTO baseAction (base_id, key, action, wait) VALUES (1, 'A', 'click', 0.5)")
-        cur.execute("INSERT INTO baseAction (base_id, key, action, wait) VALUES (1, 'R', 'screen', 0.5)")
-        conn.commit()
-
-        # 시나리오 삽입
-        for step in steps:
-            if step.get("action") == "next":
-                continue
-
-            cur.execute("""
-                INSERT INTO scenario (
-                    base_id, key, action, target, position,
-                    wait, threshold, min_match_count, method
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                1,
-                "R" if step["action"] == "screen" else "A",
-                step.get("action"),
-                step.get("target"),
-                pos_to_str(step.get("position")),
-                step.get("wait", 0.5),
-                step.get("threshold"),
-                step.get("min_match_count"),
-                step.get("method"),
-            ))
-
-        conn.commit()
-        conn.close()
+        # db_loader의 함수 호출
+        create_db_with_scenarios(new_db_path, steps)
 
         return jsonify({"status": "saved", "db": new_db_filename})
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route("/run", methods=["POST"])
 def run():
