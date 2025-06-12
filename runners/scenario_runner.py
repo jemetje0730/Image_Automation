@@ -168,3 +168,40 @@ def run_scenario(scenario_path_or_id, config, input_type='json'):
             runner_logger.warning(f"[SCENARIO] 알 수 없는 액션: {action}")
 
     return True
+
+def run_all_db_scenarios(config):
+    db_folder = config.get("db_folder", "scenarios")
+
+    for filename in os.listdir(db_folder):
+        if not filename.endswith(".db"):
+            continue
+
+        db_path = os.path.join(db_folder, filename)
+        logging.info(f" DB 파일 실행 시작: {db_path}")
+
+        try:
+            import sqlite3
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+
+            cur.execute("SELECT DISTINCT base_id FROM baseAction ORDER BY base_id")
+            base_ids = [row[0] for row in cur.fetchall()]
+            conn.close()
+
+            if not base_ids:
+                logging.warning(f"⚠ base_id 없음: {db_path}")
+                continue
+
+            for base_id in base_ids:
+                logging.info(f"실행 시작 from {filename}")
+                local_config = config.copy()
+                local_config["db_path"] = db_path
+
+                success = run_scenario(base_id, local_config, input_type="db")
+                if not success:
+                    logging.error(f"❌ base_id={base_id} 실패 (파일: {filename}) - 다음 base_id로 진행")
+                    continue
+
+        except Exception as e:
+            logging.error(f"❌ DB 순회 중 오류: {db_path} - {e}")
+            continue
